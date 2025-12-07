@@ -24,6 +24,7 @@ class AgentState(TypedDict):
     pdd_doc: str
     user_stories_doc: str
     document_paths: Annotated[list[str], add]
+    document_paths_docx: Annotated[list[str], add]
     indexed: bool
 
 

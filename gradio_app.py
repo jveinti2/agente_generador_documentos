@@ -41,16 +41,17 @@ def generate_documents_with_content(transcript_file, session_id):
             config={"configurable": {"thread_id": str(uuid.uuid4())}}
         )
 
-        paths = result['document_paths']
+        paths_md = result['document_paths']
+        paths_docx = result['document_paths_docx']
         project_name = result['analysis']['project_name']
 
         return (
             "✓ Documentos generados exitosamente",
-            paths[0] if len(paths) > 0 else None,
-            paths[1] if len(paths) > 1 else None,
-            paths[2] if len(paths) > 2 else None,
+            paths_docx[0] if len(paths_docx) > 0 else None,
+            paths_docx[1] if len(paths_docx) > 1 else None,
+            paths_docx[2] if len(paths_docx) > 2 else None,
             project_name,
-            paths,
+            paths_md,
             result['requirements_doc'],
             result['pdd_doc'],
             result['user_stories_doc']
@@ -79,7 +80,7 @@ def chat_fn(message, history):
         docs = vector_store.similarity_search(message, k=4)
 
         if not docs:
-            return "No hay documentos indexados. Genera documentos primero en la pestaña 'Cargar Transcripción'.", ""
+            return "No hay documentos indexados. Genera documentos primero en la pestaña 'Cargar Transcripción'."
 
         context = "\n\n".join([doc.page_content for doc in docs])
 
@@ -89,14 +90,9 @@ def chat_fn(message, history):
             {"role": "user", "content": message}
         ])
 
-        sources_md = "### Fuentes:\n\n"
-        for i, doc in enumerate(docs, 1):
-            sources_md += f"{i}. **{doc.metadata['doc_type']}** (chunk {doc.metadata.get('chunk_index', 0)})\n"
-            sources_md += f"   > {doc.page_content[:150]}...\n\n"
-
-        return response.content, sources_md
+        return response.content
     except Exception as e:
-        return f"Error: {str(e)}", ""
+        return f"Error: {str(e)}"
 
 
 def create_interface():
@@ -218,13 +214,10 @@ def create_interface():
 
             with gr.Tab("4. Consultar Documentos"):
                 gr.Markdown("### Chat con tus documentos generados")
-                gr.Markdown("Haz preguntas sobre los documentos generados. El sistema buscará en el contenido y mostrará las fuentes.")
-
-                sources_display = gr.Markdown(label="Fuentes utilizadas")
+                gr.Markdown("Haz preguntas sobre los documentos generados.")
 
                 gr.ChatInterface(
                     fn=chat_fn,
-                    additional_outputs=[sources_display],
                     chatbot=gr.Chatbot(height=400),
                     textbox=gr.Textbox(placeholder="¿Qué requiere el sistema?", scale=4)
                 )

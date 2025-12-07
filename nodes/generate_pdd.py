@@ -64,7 +64,7 @@ Análisis:
 
     markdown_content = result.content
 
-    filepath = save_markdown_document(
+    paths = save_markdown_document(
         content=markdown_content,
         project_name=analysis['project_name'],
         doc_type="PDD"
@@ -72,5 +72,6 @@ Análisis:
 
     return {
         "pdd_doc": markdown_content,
-        "document_paths": [filepath]
+        "document_paths": [paths["md"]],
+        "document_paths_docx": [paths["docx"]]
     }

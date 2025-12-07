@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "mcp__docs-langchain__SearchDocsByLangChain"
+      "mcp__docs-langchain__SearchDocsByLangChain",
+      "Bash(uv sync:*)"
     ],
     "deny": [],
     "ask": []
