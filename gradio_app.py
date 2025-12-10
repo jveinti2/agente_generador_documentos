@@ -212,15 +212,15 @@ def create_interface():
                     outputs=[stories_status]
                 )
 
-            with gr.Tab("4. Consultar Documentos"):
-                gr.Markdown("### Chat con tus documentos generados")
-                gr.Markdown("Haz preguntas sobre los documentos generados.")
+            # with gr.Tab("4. Consultar Documentos"):
+            #     gr.Markdown("### Chat con tus documentos generados")
+            #     gr.Markdown("Haz preguntas sobre los documentos generados.")
 
-                gr.ChatInterface(
-                    fn=chat_fn,
-                    chatbot=gr.Chatbot(height=400),
-                    textbox=gr.Textbox(placeholder="¿Qué requiere el sistema?", scale=4)
-                )
+            #     gr.ChatInterface(
+            #         fn=chat_fn,
+            #         chatbot=gr.Chatbot(height=400),
+            #         textbox=gr.Textbox(placeholder="¿Qué requiere el sistema?", scale=4)
+            #     )
 
     return interface
 
