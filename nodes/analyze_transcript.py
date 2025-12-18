@@ -1,6 +1,7 @@
-from langchain_openai import ChatOpenAI
+from langchain_openai import AzureChatOpenAI
 from pydantic import BaseModel, Field
 from typing import TypedDict
+from utils.azure_config import get_azure_chat_config
 
 
 class TranscriptAnalysis(BaseModel):
@@ -34,7 +35,14 @@ def analyze_transcript_node(state: AgentState) -> dict:
     """
     transcript = state["transcript"]
 
-    llm = ChatOpenAI(model="gpt-4o", temperature=0)
+    config = get_azure_chat_config()
+    llm = AzureChatOpenAI(
+        azure_endpoint=config["base_url"],
+        azure_deployment=config["deployment"],
+        api_version=config["api_version"],
+        api_key=config["api_key"],
+        temperature=0
+    )
     structured_llm = llm.with_structured_output(TranscriptAnalysis)
 
     system_prompt = """You are an expert business analyst. Analyze the conversation transcript and extract:

@@ -105,7 +105,7 @@ def main():
     standalone_agent = get_agent_with_checkpointer()
 
     result = standalone_agent.invoke(
-        {"transcript": sample_transcript},
+        {"transcript": sample_transcript, "session_id": "default"},
         config={"configurable": {"thread_id": "example-1"}}
     )
 

@@ -13,13 +13,15 @@ Multi-document generator from conversation transcripts using LangGraph. Generate
 - `cp .env.example .env` - Create environment file and add your OPENAI_API_KEY
 
 **Running the Application:**
-- `uv run python gradio_app.py` - Start Gradio interface on http://localhost:7860
-- `langgraph dev` - Start LangGraph Studio for visual debugging (development with LangSmith)
+- `uv run python gradio_app.py` - Start Gradio interface (defaults to http://0.0.0.0:8000)
+- `uv run python main.py` - Run standalone example with hardcoded transcript
+- `langgraph dev` - Start LangGraph Studio for visual debugging (requires LangSmith configured)
 
 **Gradio Interface:**
-- Tab 1: Upload transcript (.txt) and generate documents
-- Tab 2: Upload/manage templates (.md files for each document type)
-- Tab 3: Chat playground to query generated documents with RAG (shows sources)
+- Tab 1 (Cargar Transcripción): Upload transcript (.txt), generate documents, download .docx files
+- Tab 2 (Visualizar Documentos): View generated markdown content in-app
+- Tab 3 (Plantillas): Upload custom .md templates (REQUERIMIENTOS, PDD, HISTORIAS_USUARIO)
+- Tab 4 (Consultar Documentos): RAG chat interface to query generated documents
 
 ## Architecture
 
@@ -41,22 +43,33 @@ Multi-document generator from conversation transcripts using LangGraph. Generate
 └── output/                    # Generated markdown documents (TIPO-nombre.md)
 ```
 
-**Workflow:**
-1. `analyze_transcript` - Extracts project info, topics, stakeholders
-2. Parallel generation of 3 documents using template-based prompts
-3. `index_documents` - Chunks and indexes documents for RAG
+**Workflow (LangGraph):**
+1. `analyze_transcript` - Extracts project info, topics, stakeholders using structured output (TranscriptAnalysis)
+2. Parallel generation (fan-out):
+   - `generate_requirements` - Generates functional/non-functional requirements
+   - `generate_pdd` - Generates product design document
+   - `generate_user_stories` - Generates epics and user stories
+3. Fan-in to `index_documents` - Saves .md/.docx files, chunks content, indexes in vector store for RAG
 
 **Tech Stack:**
-- LangGraph for orchestration (parallel fan-out/fan-in pattern)
-- Template-based generation (user uploads .md templates, LLM follows structure)
-- OpenAI GPT-4o for generation
-- InMemoryVectorStore for RAG Q&A
+- LangGraph for orchestration (StateGraph with MemorySaver checkpointer)
+- OpenAI GPT-4o for LLM generation (via ChatOpenAI)
+- Template-based generation: TemplateManager loads user/default/builtin templates, LLM follows structure
+- python-docx for markdown → Word conversion
+- InMemoryVectorStore (LangChain) for RAG with RecursiveCharacterTextSplitter
 - Gradio for web interface
 
+**Key Architectural Decisions:**
+- Dual checkpointer setup: main.py exports `agent` without checkpointer (for langgraph dev), `get_agent_with_checkpointer()` for standalone/Gradio use
+- Session-based templates: Each Gradio session gets unique UUID, templates stored in `templates/{session_id}/`
+- Dual file format: .md for in-app viewing, .docx for downloads/sharing
+- AgentState uses `Annotated[list[str], add]` for document_paths to accumulate results from parallel nodes
+
 **File Naming Convention:**
-- `REQUERIMIENTOS-{nombre}.md` - Requirements document
-- `PDD-{nombre}.md` - Product Design Document
-- `HISTORIAS_USUARIO-{nombre}.md` - User Stories document
+- `REQUERIMIENTOS-{nombre}.md` and `.docx` - Requirements document
+- `PDD-{nombre}.md` and `.docx` - Product Design Document
+- `HISTORIAS_USUARIO-{nombre}.md` and `.docx` - User Stories document
+- Project name normalized: lowercase, spaces/underscores → hyphens
 
 ## Environment Setup
 

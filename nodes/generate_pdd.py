@@ -1,6 +1,7 @@
-from langchain_openai import ChatOpenAI
+from langchain_openai import AzureChatOpenAI
 from utils.file_manager import save_markdown_document
 from utils.template_manager import TemplateManager
+from utils.azure_config import get_azure_chat_config
 from typing import TypedDict
 
 template_manager = TemplateManager()
@@ -33,7 +34,14 @@ def generate_pdd_node(state: AgentState) -> dict:
 
     template_content = template_manager.load_template(session_id, "PDD")
 
-    llm = ChatOpenAI(model="gpt-4o", temperature=0.3)
+    config = get_azure_chat_config()
+    llm = AzureChatOpenAI(
+        azure_endpoint=config["base_url"],
+        azure_deployment=config["deployment"],
+        api_version=config["api_version"],
+        api_key=config["api_key"],
+        temperature=0.3
+    )
 
     system_prompt = f"""Eres un diseñador de producto experto.
 Genera un documento de Diseño de Producto (PDD) siguiendo EXACTAMENTE la estructura de esta plantilla:

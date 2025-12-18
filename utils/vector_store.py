@@ -1,7 +1,8 @@
 from langchain_core.vectorstores import InMemoryVectorStore
-from langchain_openai import OpenAIEmbeddings
+from langchain_openai import AzureOpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
+from utils.azure_config import get_azure_embeddings_config
 from typing import Optional
 
 _vector_store: Optional[InMemoryVectorStore] = None
@@ -17,7 +18,13 @@ def get_vector_store() -> InMemoryVectorStore:
     global _vector_store
 
     if _vector_store is None:
-        embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
+        config = get_azure_embeddings_config()
+        embeddings = AzureOpenAIEmbeddings(
+            azure_endpoint=config["base_url"],
+            azure_deployment=config["deployment"],
+            api_version=config["api_version"],
+            api_key=config["api_key"]
+        )
         _vector_store = InMemoryVectorStore(embeddings)
 
     return _vector_store

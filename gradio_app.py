@@ -2,7 +2,8 @@ import gradio as gr
 from main import get_agent_with_checkpointer
 from utils.template_manager import TemplateManager
 from utils.vector_store import get_vector_store
-from langchain_openai import ChatOpenAI
+from langchain_openai import AzureChatOpenAI
+from utils.azure_config import get_azure_chat_config
 import uuid
 import os
 
@@ -84,7 +85,14 @@ def chat_fn(message, history):
 
         context = "\n\n".join([doc.page_content for doc in docs])
 
-        llm = ChatOpenAI(model="gpt-4o", temperature=0)
+        config = get_azure_chat_config()
+        llm = AzureChatOpenAI(
+            azure_endpoint=config["base_url"],
+            azure_deployment=config["deployment"],
+            api_version=config["api_version"],
+            api_key=config["api_key"],
+            temperature=0
+        )
         response = llm.invoke([
             {"role": "system", "content": f"Contexto:\n{context}"},
             {"role": "user", "content": message}
@@ -227,4 +235,4 @@ def create_interface():
 
 if __name__ == "__main__":
     interface = create_interface()
-    interface.launch(server_name="0.0.0.0", server_port=8000)
+    interface.launch(server_name="0.0.0.0", server_port=7860)
